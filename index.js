@@ -3,7 +3,8 @@ const path = require('path');
 const bodyParser = require('body-parser');
 const session = require('express-session');
 const authRoutes = require('./routes/auth');
-const userRoutes = require('./routes/userRoutes'); // Add this line
+const userRoutes = require('./routes/userRoutes'); 
+require('dotenv').config();
 
 const app = express();
 const port = process.env.PORT || 4000;
