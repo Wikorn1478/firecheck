@@ -5,7 +5,7 @@ const session = require('express-session');
 const authRoutes = require('./routes/auth');
 
 const app = express();
-const port = 4000;
+const port = process.env.PORT || 4000;
 
 // Middleware
 app.use(bodyParser.urlencoded({ extended: true }));
