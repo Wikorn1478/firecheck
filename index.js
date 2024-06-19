@@ -3,6 +3,7 @@ const path = require('path');
 const bodyParser = require('body-parser');
 const session = require('express-session');
 const authRoutes = require('./routes/auth');
+const userRoutes = require('./routes/userRoutes'); // Add this line
 
 const app = express();
 const port = process.env.PORT || 4000;
@@ -30,9 +31,7 @@ app.use((req, res, next) => {
 
 // Routes
 app.use('/', authRoutes);
-
-// Routes
-app.use('/', authRoutes);
+app.use('/user', userRoutes); // Add this line
 
 // Add this route handler for admin_details in index.js
 
@@ -68,7 +67,6 @@ app.get('/admin_details/:id', async (req, res) => {
         res.status(500).send('An error occurred while retrieving request details');
     }
 });
-
 
 // Start the server
 app.listen(port, () => {
