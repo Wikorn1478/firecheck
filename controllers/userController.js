@@ -1,5 +1,5 @@
 const { QueryTypes } = require('sequelize');
-const sequelize = require('../path_to_your_sequelize_instance');
+const sequelize = require('../config/database'); // Correct the path here
 
 async function getUser(req, res) {
   const { username, email } = req.body;
