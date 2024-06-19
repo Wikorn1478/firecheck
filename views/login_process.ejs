@@ -1,0 +1,39 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ยินดีต้อนรับ | FIRE CHECK</title>
+    <link rel="stylesheet" href="/css/style.css">
+    <link rel="icon" type="image/png" href="/images/logo.png">
+</head>
+<body>
+    <header>
+        <div class="container">
+            <div class="logo">
+                <img src="/images/logo1.png" alt="FIRE CHECK Logo">
+            </div>
+            <nav>
+                <ul>
+                    <li><a href="/login_process" class="nav-link">หน้าแรก</a></li>
+                    <li><a href="/burning" class="nav-link">ขอคำแนะนำ</a></li>
+                    <li><a href="/history_request" class="nav-link">ประวัติคำขอ</a></li>
+                </ul>
+                <div class="auth-buttons">
+                    <a href="#" class="button primary"><%= user.firstName %> <%= user.lastName %> (<%= user.role %>)</a>
+                    <a href="/logout" class="button logout-button">ออกจากระบบ</a>
+                </div>
+            </nav>
+        </div>
+    </header>
+    <main>
+        <section class="hero">
+            <div class="container hero-content">
+                <h1>ยินดีต้อนรับสู่ระบบ <span>FIRE CHECK</span></h1>
+                <p>ระบบบริหารจัดการการเผาในที่โล่ง</p>
+                <a href="/burning" class="button primary">ขอคำแนะนำ <span class="arrow">&#8594;</span></a>
+            </div>
+        </section>
+    </main>
+</body>
+</html>

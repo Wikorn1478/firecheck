@@ -1,0 +1,213 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>ขอคำแนะนำ | FIRE CHECK</title>
+    <link rel="stylesheet" href="/css/style.css" />
+    <link rel="icon" type="image/png" href="/images/logo.png">
+    <link href="https://fonts.googleapis.com/css2?family=Kanit:wght@400;500&display=swap" rel="stylesheet" />
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+    <style>
+      .info-icon {
+        width: 16px;
+        height: 16px;
+        margin-left: 5px;
+        vertical-align: middle;
+        cursor: pointer;
+      }
+      .modal {
+        display: none; 
+        position: fixed; 
+        z-index: 1; 
+        left: 0;
+        top: 0;
+        width: 100%;
+        height: 100%;
+        overflow: auto; 
+        background-color: rgb(0,0,0); 
+        background-color: rgba(0,0,0,0.4); 
+      }
+      .modal-content {
+        background-color: #fefefe;
+        margin: 3% auto; 
+        padding: 20px;
+        border: 1px solid #888;
+        width: 80%; 
+      }
+      .close {
+        color: #aaa;
+        float: right;
+        font-size: 28px;
+        font-weight: bold;
+      }
+      .close:hover,
+      .close:focus {
+        color: black;
+        text-decoration: none;
+        cursor: pointer;
+      }
+      .advice-header {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        margin-bottom: 20px;
+        padding: 20px;
+        border-radius: 10px;
+      }
+      .header-cannot-burn {
+        background-color: #ffe6e6;
+      }
+      .header-can-burn {
+        background-color: #ccffcc;
+      }
+    </style>
+</head>
+<body>
+    <header>
+      <div class="container">
+        <div class="logo">
+          <img src="/images/logo1.png" alt="FIRE CHECK Logo" />
+        </div>
+        <nav>
+          <ul>
+            <li><a href="/" class="nav-link">หน้าแรก</a></li>
+            <li><a href="/burning" class="nav-link">ขอคำแนะนำ</a></li>
+            <li><a href="/history_request" class="nav-link">ประวัติคำขอ</a></li>
+          </ul>
+          <div class="auth-buttons">
+            <a href="#" class="button primary"><%= user.firstName %> <%= user.lastName %> (<%= user.role %>)</a>
+            <a href="/logout" class="button logout-button">ออกจากระบบ</a>
+          </div>
+        </nav>
+      </div>
+    </header>
+    <main>
+      <section class="advice-section">
+        <div class="container">
+          <div class="table-container">
+            <div id="advice-header" class="advice-header">
+              <div class="advice-title">
+                <img id="advice-icon" alt="Not Recommend" />
+                <h1 id="advice-txt"></h1>
+              </div>
+            </div>
+            <table class="advice-table">
+              <thead>
+                <tr>
+                  <th>วันที่</th>
+                  <th>เวลา</th>
+                  <th>ระดับสีค่าฝุ่น PM2.5</th>
+                  <th>ความกดอากาศ</th>
+                  <th>ความชื้น</th>
+                  <th>อุณหภูมิ</th>
+                  <th>คำแนะนำ</th>
+                </tr>
+              </thead>
+              <tbody id="table-result"></tbody>
+            </table>
+            <div class="button-container">
+              <button id="submit-button" class="button-common full-width-button">ตกลง</button>
+            </div>
+          </div>
+        </div>
+      </section>
+    </main>
+
+    <div id="myModal" class="modal">
+      <div class="modal-content">
+        <span class="close">&times;</span>
+        <img id="modalImage" src="" alt="Image" style="width: 100%;">
+      </div>
+    </div>
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/moment.js/2.29.1/moment.min.js"></script>
+    <script>
+      document.getElementById("submit-button").addEventListener("click", function () {
+        window.location.href = "/burning";
+      });
+
+      const colorMap = {
+        1: `<div class="very-good-quality">ดีมาก</div>`,
+        2: `<div class="good-quality">ดี</div>`,
+        3: `<div class="fair-quality">ปานกลาง</div>`,
+        4: `<div class="bad-quality">เริ่มมีผลกระทบต่อสุขภาพ</div>`,
+        5: `<div class="very-bad-quality">มีผลกระทบต่อสุขภาพ <i class="fas fa-info-circle info-icon" onclick="openModal('/images/pic11.png')"></i></div>`
+      };
+
+      const urlParams = new URLSearchParams(window.location.search);
+      const apiResponseString = urlParams.get("data");
+
+      // Parsing JSON response
+      const apiResponse = JSON.parse(decodeURIComponent(apiResponseString));
+      console.log(apiResponse);
+
+      const table = document.getElementById('table-result');
+      apiResponse.data.forEach((data) => {
+        const row = document.createElement("tr");
+        const pm25Color = getPM25Color(data["pm2.5"]);
+        const advice = getAdvice(pm25Color);
+
+        if (data['date'] == apiResponse['date']) {
+          row.classList.add("current-date-highlight");
+          document.getElementById('advice-txt').innerHTML = advice;
+          document.getElementById('advice-icon').src = pm25Color >= 4 ? "/images/cross.png" : "/images/correct.png";
+          document.getElementById('advice-header').classList.add(pm25Color >= 4 ? 'header-cannot-burn' : 'header-can-burn');
+        }
+
+        row.innerHTML = `
+        <td>${data.date}</td>
+        <td>${data["time"]}</td>
+        <td>${colorMap[pm25Color]}</td>
+        <td>${data.pressure}hPa</td>
+        <td>${data.humidity}%</td>
+        <td>${data.temp}°C</td>
+        <td>${advice}</td>`;
+        
+        table.appendChild(row);
+      });
+
+      function getPM25Color(pm25) {
+        if (pm25 > 75.1) {
+          return 5;
+        } else if (pm25 > 37.6) {
+          return 4;
+        } else if (pm25 > 25.1) {
+          return 3;
+        } else if (pm25 > 15.1) {
+          return 2;
+        } else {
+          return 1;
+        }
+      }
+
+      function getAdvice(pm25_level) {
+        if (pm25_level >= 4) {
+          return "<div class='cannot-burn'>ไม่ควรเผา</div>";
+        } else {
+          return "<div class='can-burn'>ควรเผา</div>";
+        }
+      }
+
+      function openModal(imageUrl) {
+        const modal = document.getElementById("myModal");
+        const modalImg = document.getElementById("modalImage");
+        modal.style.display = "block";
+        modalImg.src = imageUrl;
+      }
+
+      const modal = document.getElementById("myModal");
+      const span = document.getElementsByClassName("close")[0];
+
+      span.onclick = function() {
+        modal.style.display = "none";
+      }
+
+      window.onclick = function(event) {
+        if (event.target == modal) {
+          modal.style.display = "none";
+        }
+      }
+    </script>
+</body>
+</html>

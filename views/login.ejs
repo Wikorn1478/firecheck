@@ -1,0 +1,113 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>เข้าสู่ระบบ | FIRE CHECK</title>
+    <link rel="stylesheet" href="/css/style.css" />
+    <link rel="icon" type="image/png" href="/images/logo.png">
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link href="https://fonts.googleapis.com/css2?family=Open+Sans:wght@300;400;600;700&display=swap" rel="stylesheet" />
+    <link href="https://unicons.iconscout.com/release/v4.0.0/css/line.css" rel="stylesheet" />
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/sweetalert2@11/dist/sweetalert2.min.css">
+</head>
+<body>
+    <header>
+        <div class="container">
+            <div class="logo">
+                <img src="/images/logo1.png" alt="FIRE CHECK Logo" />
+            </div>
+            <nav>
+                <ul>
+                    <li><a href="/" class="nav-link">หน้าแรก</a></li>
+                    <li><a href="/about" class="nav-link">เกี่ยวกับ</a></li>
+                    <li><a href="/contact" class="nav-link">ติดต่อ</a></li>
+                </ul>
+                <div class="auth-buttons">
+                    <a href="/login" class="button">เข้าสู่ระบบ</a>
+                    <a href="/register" class="button primary">ลงทะเบียน</a>
+                </div>
+            </nav>
+        </div>
+    </header>
+    <main>
+        <div class="container">
+            <section class="form-section">
+                <div class="form-container">
+                    <i class="uil uil-times form-close"></i>
+                    <div class="form login-form">
+                        <form id="login-form" action="/login_process" method="POST">
+                            <h2>เข้าสู่ระบบ</h2>
+                            <% if (typeof errorMessage !== 'undefined') { %>
+                            <div class="error-message">
+                                <%= errorMessage %>
+                            </div>
+                            <% } %>
+                            <div class="input_box">
+                                <i class="uil uil-user"></i>
+                                <input type="text" placeholder="กรอกอีเมลหรือชื่อผู้ใช้ของคุณ" name="identifier" id="identifier" required />
+                            </div>
+                            <div class="input_box">
+                                <i class="uil uil-lock"></i>
+                                <input type="password" placeholder="กรอกรหัสผ่านของคุณ" name="password" id="password" required />
+                            </div>
+                            <div class="option_field">
+                                <span class="checkbox">
+                                    <input type="checkbox" id="check" />
+                                    <label for="check">จดจำฉัน</label>
+                                </span>
+                                <!--<a href="#" id="forget_password_link">ลืมรหัสผ่าน?</a> -->
+                            </div>
+                            <button type="button" class="button primary" onclick="validateLoginForm()">เข้าสู่ระบบ</button>
+                            <div class="login_signup">
+                                ยังไม่มีบัญชีใช่ไหม?
+                                <a href="/register" id="signup">ลงทะเบียน</a>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            </section>
+        </div>
+    </main>
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+    <script>
+        document.addEventListener("DOMContentLoaded", function () {
+            const formClose = document.querySelector(".form-close");
+
+            if (formClose) {
+                formClose.addEventListener("click", () => {
+                    window.location.href = "/";
+                });
+            }
+        });
+
+        function validateLoginForm() {
+            const identifier = document.getElementById("identifier").value;
+            const password = document.getElementById("password").value;
+
+            if (!identifier) {
+                Swal.fire({
+                    icon: 'error',
+                    title: 'ข้อมูลผู้ใช้ไม่ถูกต้อง',
+                    text: 'กรุณาตรวจสอบข้อมูลอีเมลหรือชื่อผู้ใช้ให้ถูกต้อง',
+                    confirmButtonText: 'ตกลง'
+                });
+                return false;
+            }
+
+            if (!password) {
+                Swal.fire({
+                    icon: 'error',
+                    title: 'ข้อมูลรหัสผ่านไม่ถูกต้อง',
+                    text: 'กรุณาตรวจสอบข้อมูลรหัสผ่านให้ถูกต้อง',
+                    confirmButtonText: 'ตกลง'
+                });
+                return false;
+            }
+
+            document.getElementById("login-form").submit();
+        }
+    </script>
+</body>
+</html>

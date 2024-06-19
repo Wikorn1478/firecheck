@@ -1,0 +1,354 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>ขอคำแนะนำ | FIRE CHECK</title>
+    <link rel="stylesheet" href="/css/style.css" />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Kanit:wght@400;500&display=swap"
+      rel="stylesheet"
+    />
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/sweetalert2@11/dist/sweetalert2.min.css">
+  </head>
+  <body>
+    <header>
+      <div class="container">
+        <div class="logo">
+          <img src="/images/logo1.png" alt="FIRE CHECK Logo" />
+        </div>
+        <nav>
+          <ul>
+            <li><a href="/login_process" class="nav-link">หน้าแรก</a></li>
+            <li><a href="/burning" class="nav-link">ขอคำแนะนำ</a></li>
+            <li><a href="/history_request" class="nav-link">ประวัติคำขอ</a></li>
+          </ul>
+          <div class="auth-buttons">
+            <a href="#" class="button primary"
+              ><%= user.firstName %> <%= user.lastName %> (<%= user.role %>)</a
+            >
+            <a href="/logout" class="button logout-button">ออกจากระบบ</a>
+          </div>
+        </nav>
+      </div>
+    </header>
+    <main>
+      <div id="fire-form">
+        <h2>ข้อมูลพื้นที่ที่ต้องการเผา</h2>
+        <div class="form-row">
+          <div class="form-group half-width">
+            <label for="burn-date"
+              >วันที่ต้องการเผา:
+              <span style="color: red"
+                >*กรุณาระบุวันที่ล่วงหน้าไม่เกิน 5 วัน</span
+              >
+            </label>
+            <input type="date" id="burn-date" name="burn-date" required />
+          </div>
+          <div class="form-group half-width">
+            <label for="burn-time">เวลาที่ต้องการเผา:</label>
+            <input type="time" id="burn-time" name="burn-time" required />
+          </div>
+        </div>
+
+        <div class="form-row">
+          <div class="form-group half-width">
+            <label for="latitude"
+              >ละติจูด:
+              <span style="color: red"
+                >*กรุณาระบุตำแหน่งที่อยู่ภายในขอบเขตของเซนเซอร์</span
+              >
+            </label>
+            <input type="text" id="latitude" name="latitude" required />
+          </div>
+          <div class="form-group half-width">
+            <label for="longitude"
+              >ลองจิจูด:
+              <span style="color: red"
+                >*กรุณาระบุตำแหน่งที่อยู่ภายในขอบเขตของเซนเซอร์</span
+              >
+            </label>
+            <input type="text" id="longitude" name="longitude" required />
+          </div>
+        </div>
+
+        <div class="button-container-1">
+          <button
+            type="button"
+            class="current-location-btn"
+            onclick="getCurrentLocation()"
+          >
+            ตำแหน่งปัจจุบัน
+          </button>
+          <div id="map-1-container">
+            <div id="map-1"></div>
+            <!-- แสดงแผนที่ -->
+          </div>
+          <button
+            type="submit"
+            id="submit-btn"
+            class="submit-btn"
+            onclick="validateForm()"
+          >
+            ขอคำแนะนำ
+          </button>
+        </div>
+      </div>
+    </main>
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+    <script>
+      function validateForm() {
+        const burnDate = document.getElementById("burn-date").value;
+        const burnTime = document.getElementById("burn-time").value;
+        const latitude = document.getElementById("latitude").value;
+        const longitude = document.getElementById("longitude").value;
+
+        if (!burnDate) {
+          Swal.fire({
+            icon: 'error',
+            title: 'ข้อมูลวันที่ไม่ถูกต้อง',
+            text: 'กรุณาตรวจสอบข้อมูลวันที่ต้องการเผาให้ถูกต้อง',
+            confirmButtonText: 'ตกลง'
+          });
+          return false;
+        }
+
+        if (!burnTime) {
+          Swal.fire({
+            icon: 'error',
+            title: 'ข้อมูลเวลาไม่ถูกต้อง',
+            text: 'กรุณาตรวจสอบข้อมูลเวลาที่ต้องการเผาให้ถูกต้อง',
+            confirmButtonText: 'ตกลง'
+          });
+          return false;
+        }
+
+        if (!latitude) {
+          Swal.fire({
+            icon: 'error',
+            title: 'ข้อมูลละติจูดไม่ถูกต้อง',
+            text: 'กรุณาตรวจสอบข้อมูลละติจูดให้ถูกต้อง',
+            confirmButtonText: 'ตกลง'
+          });
+          return false;
+        }
+
+        if (!longitude) {
+          Swal.fire({
+            icon: 'error',
+            title: 'ข้อมูลลองจิจูดไม่ถูกต้อง',
+            text: 'กรุณาตรวจสอบข้อมูลลองจิจูดให้ถูกต้อง',
+            confirmButtonText: 'ตกลง'
+          });
+          return false;
+        }
+
+        predict();
+      }
+
+      let map;
+      let marker;
+      let circles = [];
+
+      function predict() {
+        document.getElementById("submit-btn").textContent = "กำลังทำนายผล...";
+        document.getElementById("submit-btn").disabled = true;
+        fetch("http://127.0.0.1:5000/predict", {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({
+            date: document.getElementById("burn-date").value,
+            time: document.getElementById("burn-time").value,
+            lat: document.getElementById("latitude").value,
+            lon: document.getElementById("longitude").value,
+          }),
+        })
+          .then((response) => {
+            if (!response.ok) {
+              throw new Error("Network response was not ok");
+            }
+            return response.json();
+          })
+          .then((data) => {
+            const newData = {
+              data: data["result"],
+              date: document.getElementById("burn-date").value,
+              lat: document.getElementById("latitude").value,
+              lon: document.getElementById("longitude").value,
+            };
+            window.location.href = `/submit-request?data=${encodeURIComponent(
+              JSON.stringify(newData)
+            )}`;
+          })
+          .catch((error) => {
+            console.error(
+              "There was a problem with the fetch operation:",
+              error
+            );
+            document.getElementById("submit-btn").textContent = "ขอคำแนะนำ";
+            document.getElementById("submit-btn").disabled = false;
+          });
+      }
+
+      function initMap() {
+        const defaultLocation = { lat: 16.8938, lng: 98.5994 };
+        const sensor = { lat: 16.8749, lng: 98.6281 };
+        const sensor1 = { lat: 16.8446, lng: 98.5887 };
+        const sensor2 = { lat: 16.9618, lng: 98.5813 };
+
+        map = new google.maps.Map(document.getElementById("map-1"), {
+          center: defaultLocation,
+          zoom: 11,
+        });
+
+        marker = new google.maps.Marker({
+          position: defaultLocation,
+          map: map,
+          title: "ตำแหน่ง",
+        });
+
+        map.addListener("click", (event) => {
+          const clickedLocation = {
+            lat: event.latLng.lat(),
+            lng: event.latLng.lng(),
+          };
+
+          const isInServiceArea = checkIfInServiceArea(clickedLocation);
+
+          if (isInServiceArea) {
+            document.getElementById("latitude").value = clickedLocation.lat;
+            document.getElementById("longitude").value = clickedLocation.lng;
+
+            marker.setPosition(clickedLocation);
+            map.panTo(clickedLocation);
+          } else {
+            Swal.fire({
+              icon: 'error',
+              title: '<div style="white-space: nowrap;">ข้อมูลตำแหน่งนี้อยู่นอกพื้นที่ให้บริการ</div>',
+              text: 'กรุณาเลือกตำแหน่งในพื้นที่วงกลมสีแดง',
+              confirmButtonText: 'ตกลง'
+            });
+          }
+        });
+
+        addSensorZone(sensor, "TH-TAK-แม่กาษา-174");
+        addSensorZone(sensor1, "TH-TAK-รพสต.แม่กื้ดสามท่า-5027");
+        addSensorZone(sensor2, "TH-TAK-เทศบาลแม่จะเรา-5065");
+      }
+
+      function addSensorZone(position, title) {
+        circles.push(
+          new google.maps.Circle({
+            fillColor: "#FF0000",
+            fillOpacity: 0.55,
+            strokeWeight: 0,
+            map: map,
+            center: position,
+            radius: 5000,
+            clickable: false,
+          })
+        );
+
+        new google.maps.Marker({
+          position: position,
+          map: map,
+          icon: {
+            path: google.maps.SymbolPath.CIRCLE,
+            scale: 10,
+            fillColor: "#7FFF00",
+            fillOpacity: 1,
+            strokeWeight: 1,
+            strokeColor: "#FFFFFF"
+          },
+          title: title
+        });
+      }
+
+      function getCurrentLocation() {
+        if (navigator.geolocation) {
+          navigator.geolocation.getCurrentPosition(
+            (position) => {
+              const currentLocation = {
+                lat: position.coords.latitude,
+                lng: position.coords.longitude,
+              };
+
+              const isInServiceArea = checkIfInServiceArea(currentLocation);
+
+              if (isInServiceArea) {
+                document.getElementById("latitude").value = currentLocation.lat;
+                document.getElementById("longitude").value =
+                  currentLocation.lng;
+
+                marker.setPosition(currentLocation);
+                map.panTo(currentLocation);
+              } else {
+                Swal.fire({
+                  icon: 'error',
+                  title: 'ข้อมูลตำแหน่งไม่ถูกต้อง',
+                  text: 'ตำแหน่งปัจจุบันอยู่นอกพื้นที่ให้บริการ กรุณาเลือกตำแหน่งในวงกลมสีแดง',
+                  confirmButtonText: 'ตกลง'
+                });
+              }
+            },
+            (error) => {
+              console.error("Error getting current location:", error);
+              Swal.fire({
+                icon: 'error',
+                title: 'ไม่สามารถดึงตำแหน่งปัจจุบันได้',
+                text: error.message,
+                confirmButtonText: 'ตกลง'
+              });
+            },
+            {
+              enableHighAccuracy: true,
+              timeout: 10000,
+              maximumAge: 0,
+            }
+          );
+        } else {
+          Swal.fire({
+            icon: 'error',
+            title: 'เบราว์เซอร์ของคุณไม่รองรับการดึงตำแหน่งปัจจุบัน',
+            confirmButtonText: 'ตกลง'
+          });
+        }
+      }
+
+      function checkIfInServiceArea(location) {
+        return circles.some((circle) => {
+          const center = circle.getCenter();
+          const radius = circle.getRadius();
+          const distance =
+            google.maps.geometry.spherical.computeDistanceBetween(
+              new google.maps.LatLng(location),
+              center
+            );
+          return distance <= radius;
+        });
+      }
+
+      function setDateConstraints() {
+        const today = new Date();
+        const maxDate = new Date();
+        maxDate.setDate(today.getDate() + 4); // Set maximum date to 4 days in the future
+
+        const dateInput = document.getElementById("burn-date");
+        dateInput.min = today.toISOString().split("T")[0];
+        dateInput.max = maxDate.toISOString().split("T")[0];
+      }
+
+      window.onload = function () {
+        initMap();
+        setDateConstraints();
+      };
+    </script>
+    <script
+      src="https://maps.googleapis.com/maps/api/js?key=AIzaSyAeW0jmGZk17wMi3VqDMCUWpwf3caG4vgE&callback=initMap&libraries=geometry"
+      async
+      defer
+    ></script>
+  </body>
+</html>

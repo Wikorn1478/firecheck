@@ -1,0 +1,127 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>รายละเอียดผู้ใช้ | FIRE CHECK</title>
+    <link rel="stylesheet" href="/css/style.css" />
+    <link rel="icon" type="image/png" href="/images/logo.png">
+    <link href="https://fonts.googleapis.com/css2?family=Kanit:wght@400;500&display=swap" rel="stylesheet" />
+    <style>
+        .advice-header {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background-color: #f8d7da;
+            color: #721c24;
+            padding: 10px;
+            border-radius: 5px;
+            margin-bottom: 20px;
+        }
+        .advice-header.can-burn {
+            background-color: #d4edda;
+            color: #155724;
+        }
+        .advice-title {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        .advice-title img {
+            width: 50px;
+            height: 50px;
+        }
+        .button-container {
+            display: flex;
+            justify-content: flex-start;
+            margin-bottom: 20px;
+        }
+        .button-common {
+            background-color: #EF4364;
+            color: #ffffff;
+            border: 1px solid #EF4364;
+            padding: 10px 20px;
+            border-radius: 5px;
+            cursor: pointer;
+            margin-top: 20px; 
+        }
+    </style>
+</head>
+<body>
+    <header>
+        <div class="container">
+            <div class="logo">
+                <img src="/images/logo1.png" alt="FIRE CHECK Logo" />
+            </div>
+            <nav>
+                <ul>
+                    <li><a href="/" class="nav-link">หน้าแรก</a></li>
+                    <li><a href="/burning" class="nav-link">ขอคำแนะนำ</a></li>
+                    <li><a href="/history_request" class="nav-link">ประวัติคำขอ</a></li>
+                </ul>
+                <div class="auth-buttons">
+                    <a href="#" class="button primary"><%= user.firstName %> <%= user.lastName %> (<%= user.role %>)</a>
+                    <a href="/logout" class="button logout-button">ออกจากระบบ</a>
+                </div>
+            </nav>
+        </div>
+    </header>
+    <main>
+        <section class="advice-section">
+            <div class="container">
+                <div class="table-container">
+                    <div class="button-container">
+                        <button onclick="window.location.href='/history_request'" class="button-common">กลับไปยังประวัติคำขอ</button>
+                    </div>
+                    <% const advice = requests.some(request => request.PM2_5 > 37.6) ? 'ไม่ควรเผา' : 'ควรเผา'; %>
+                    <% const adviceHeaderClass = advice === 'ควรเผา' ? 'advice-header can-burn' : 'advice-header'; %>
+                    <% const adviceIcon = advice === 'ควรเผา' ? '/images/correct.png' : '/images/cross.png'; %>
+                    <div class="<%= adviceHeaderClass %>">
+                        <div class="advice-title">
+                            <img src="<%= adviceIcon %>" alt="<%= advice %>" />
+                            <h1><%= advice %></h1>
+                        </div>
+                    </div>
+                    <table class="advice-table">
+                        <thead>
+                            <tr>
+                                <th>วันที่</th>
+                                <th>เวลา</th>
+                                <th>ระดับสีค่าฝุ่น PM2.5</th>
+                                <th>ความกดอากาศ</th>
+                                <th>ความชื้น</th>
+                                <th>อุณหภูมิ</th>
+                                <th>คำแนะนำ</th>
+                            </tr>
+                        </thead>
+                        <tbody id="weather-data-body">
+                            <% const getPM25Color = (pm25) => {
+                              if (pm25 > 75.1) return '<div class="very-bad-quality">มีผลกระทบต่อสุขภาพ</div>';
+                              if (pm25 > 37.6) return '<div class="bad-quality">เริ่มมีผลกระทบต่อสุขภาพ</div>';
+                              if (pm25 > 25.1) return '<div class="fair-quality">ปานกลาง</div>';
+                              if (pm25 > 15.1) return '<div class="good-quality">ดี</div>';
+                              return `<div class="very-good-quality">ดีมาก <i class="fas fa-info-circle pm25-icon" onclick="showModal('pic10.png')"></i></div>`;
+                          }; %>
+                          <% const getAdvice = (pm25) => {
+                              if (pm25 > 37.6) return '<div class="cannot-burn">ไม่ควรเผา</div>';
+                              return '<div class="can-burn">ควรเผา</div>';
+                          }; %>
+                          <% requests.forEach((request, index) => { %>
+                            <tr>
+                              <td><%= moment(request.Burn_Date).format('DD-MM-YYYY') %></td>
+                              <td><%= request.Burn_Time %></td>
+                              <td><%- getPM25Color(request.PM2_5) %></td>
+                              <td><%= request.Pressure %> hPa</td>
+                              <td><%= request.Humidity %> %</td>
+                              <td><%= request.Temperature %> °C</td>
+                              <td><%- getAdvice(request.PM2_5) %></td>
+                          </tr>
+                          <% }) %>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </section>
+    </main>
+</body>
+</html>

@@ -1,0 +1,258 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ประวัติคำขอ | FIRE CHECK</title>
+    <link rel="stylesheet" href="/css/style.css">
+    <link rel="icon" type="image/png" href="/images/logo.png">
+    <link href="https://fonts.googleapis.com/css2?family=Kanit:wght@400;500&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+    <style>
+        .pm25-icon {
+            cursor: pointer;
+            color: white;
+            margin-left: auto;
+        }
+        .modal {
+            display: none;
+            position: fixed;
+            z-index: 1;
+            padding-top: 60px;
+            left: 0;
+            top: 0;
+            width: 100%;
+            height: 100%;
+            overflow: auto;
+            background-color: rgb(0,0,0);
+            background-color: rgba(0,0,0,0.4);
+        }
+        .modal-content {
+            background-color: #fefefe;
+            margin: 5% auto;
+            padding: 20px;
+            border: 1px solid #888;
+            width: 80%;
+        }
+        .close {
+            color: #aaa;
+            float: right;
+            font-size: 28px;
+            font-weight: bold;
+        }
+        .close:hover,
+        .close:focus {
+            color: black;
+            text-decoration: none;
+            cursor: pointer;
+        }
+        .status-bad {
+            background-color: #ffcccc;
+            text-align: center;
+        }
+        .status-medium {
+            background-color: #ffebcc;
+            text-align: center;
+        }
+        .status-good {
+            background-color: #ccffcc;
+            text-align: center;
+        }
+    </style>
+</head>
+<body>
+    <header>
+        <div class="container">
+            <div class="logo">
+                <img src="/images/logo1.png" alt="FIRE CHECK Logo">
+            </div>
+            <nav>
+                <ul>
+                    <li><a href="/login_process" class="nav-link">หน้าแรก</a></li>
+                    <li><a href="/burning" class="nav-link">ขอคำแนะนำ</a></li>
+                    <li><a href="/history_request" class="nav-link">ประวัติคำขอ</a></li>
+                </ul>
+                <div class="auth-buttons">
+                    <a href="#" class="button primary"><%= user.firstName %> <%= user.lastName %> (<%= user.role %>)</a>
+                    <a href="/logout" class="button logout-button">ออกจากระบบ</a>
+                </div>
+            </nav>
+        </div>
+    </header>
+    <main>
+        <section class="history-section">
+            <div class="container-1">
+                <div class="back-button-container"></div>
+                <div class="header-section">
+                    <h1>รายการประวัติขอคำแนะนำการเผา</h1>
+                    <div class="filters-container">
+                        <div class="rows-select">
+                            <label for="rows">แสดง</label>
+                            <select id="rows" onchange="changeRows(this.value)">
+                                <option value="5">5</option>
+                                <option value="10">10</option>
+                                <option value="25">25</option>
+                                <option value="50">50</option>
+                                <option value="100">100</option>
+                            </select>
+                            <label for="rows">แถว</label>
+                        </div>
+                        <div class="search-bar">
+                            <input type="text" placeholder="ค้นหา" onkeyup="searchTable(this.value)" />
+                        </div>
+                    </div>
+                </div>
+                <div class="table-container">
+                    <table class="history-table" id="myTable">
+                        <thead>
+                            <tr>
+                                <th>ลำดับ</th>
+                                <th>วันที่</th>
+                                <th>เวลา</th>
+                                <th>ละติจูด</th>
+                                <th>ลองจิจูด</th>
+                                <th>ระดับสีค่าฝุ่น</th>
+                                <th>คำแนะนำ</th>
+                                <th>รายละเอียด</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                          <% const getClass = (pm25) => {
+                              if (pm25 > 37.6) return 'status-bad';
+                              <!-- if (pm25 > 37.6) return 'status-medium';  -->
+                              return 'status-good';
+                          }; %>
+                          <% const getPM25Color = (pm25) => {
+                              const icon = '<i class="fas fa-info-circle pm25-icon" onclick="showModal(`pic10.png`)"></i>';
+                              if (pm25 > 75.1) return `<div class="very-bad-quality">มีผลกระทบต่อสุขภาพ ${icon}</div>`;
+                              if (pm25 > 37.6) return `<div class="bad-quality">เริ่มมีผลกระทบต่อสุขภาพ ${icon}</div>`;
+                              if (pm25 > 25.1) return `<div class="fair-quality">ปานกลาง ${icon}</div>`;
+                              if (pm25 > 15.1) return `<div class="good-quality">ดี ${icon}</div>`;
+                              return `<div class="very-good-quality">ดีมาก ${icon}</div>`;
+                          }; %>
+                          <% const getAdvice = (pm25) => {
+                              if (pm25 > 37.6) return '<div class="cannot-burn">ไม่ควรเผา</div>';
+                              return '<div class="can-burn">ควรเผา</div>';
+                          }; %>
+                          <% requests.forEach((request, index) => { %>
+                          <tr class="<%= getClass(request.PM2_5) %>">
+                              <td><%= index + 1 %></td>
+                              <td><%= moment(request.Burn_Date).format('DD-MM-YYYY') %></td>
+                              <td><%= request.Burn_Time %></td>
+                              <td><%= request.Latitude %></td>
+                              <td><%= request.Longitude %></td>
+                              <td><%- getPM25Color(request.PM2_5) %></td>
+                              <td><%- getAdvice(request.PM2_5) %></td>
+                              <td><a href="/user_details/<%= request.Request_ID %>" class="button-history">รายละเอียด</a></td>
+                          </tr>
+                          <% }) %>
+                        </tbody>                                     
+                    </table>
+                </div>
+                <div class="pagination">
+                    <button onclick="prevPage()" class="button">ก่อนหน้า</button>
+                    <span id="page-info"></span>
+                    <button onclick="nextPage()" class="button">ถัดไป</button>
+                </div>
+            </div>
+        </section>
+    </main>
+    <!-- The Modal -->
+    <div id="myModal" class="modal">
+        <div class="modal-content">
+            <span class="close">&times;</span>
+            <img id="modalImage" src="" alt="Modal Image" style="width: 100%;">
+        </div>
+    </div>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/moment.js/2.29.1/moment.min.js"></script>
+    <script>
+        let currentPage = 1;
+        let rowsPerPage = parseInt(document.getElementById("rows").value);
+        const table = document.getElementById("myTable");
+        const tr = table.getElementsByTagName("tr");
+
+        function changeRows(rows) {
+            currentPage = 1;
+            rowsPerPage = parseInt(rows);
+            showPage(currentPage);
+        }
+
+        function showPage(page) {
+            let start = (page - 1) * rowsPerPage + 1;
+            let end = start + rowsPerPage - 1;
+
+            for (let i = 1; i < tr.length; i++) {
+                if (i >= start && i <= end) {
+                    tr[i].style.display = "";
+                } else {
+                    tr[i].style.display = "none";
+                }
+            }
+
+            document.getElementById("page-info").textContent = `Page ${page}`;
+        }
+
+        function nextPage() {
+            if (currentPage * rowsPerPage < tr.length - 1) {
+                currentPage++;
+                showPage(currentPage);
+            }
+        }
+
+        function prevPage() {
+            if (currentPage > 1) {
+                currentPage--;
+                showPage(currentPage);
+            }
+        }
+
+        function searchTable(query) {
+            const filter = query.toLowerCase();
+            let matchingRows = [];
+
+            for (let i = 1; i < tr.length; i++) {
+                let tdArray = tr[i].getElementsByTagName("td");
+                let rowContainsQuery = false;
+
+                for (let j = 0; j < tdArray.length; j++) {
+                    let td = tdArray[j];
+                    if (td && td.innerHTML.toLowerCase().indexOf(filter) > -1) {
+                        rowContainsQuery = true;
+                        break;
+                    }
+                }
+                if (rowContainsQuery) {
+                    tr[i].style.display = "";
+                    matchingRows.push(tr[i]);
+                } else {
+                    tr[i].style.display = "none";
+                }
+            }
+
+            document.getElementById("page-info").textContent = `Found ${matchingRows.length} matching rows`;
+        }
+
+        document.addEventListener("DOMContentLoaded", () => {
+            showPage(currentPage);
+        });
+
+        function showModal(imageSrc) {
+            var modal = document.getElementById("myModal");
+            var modalImg = document.getElementById("modalImage");
+            modal.style.display = "block";
+            modalImg.src = "/images/" + imageSrc;
+
+            var span = document.getElementsByClassName("close")[0];
+            span.onclick = function() {
+                modal.style.display = "none";
+            }
+
+            window.onclick = function(event) {
+                if (event.target == modal) {
+                    modal.style.display = "none";
+                }
+            }
+        }
+    </script>
+</body>
+</html>

@@ -1,0 +1,242 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>ลงทะเบียน | FIRE CHECK</title>
+  <link rel="stylesheet" href="/css/style.css" />
+  <link rel="icon" type="image/png" href="/images/logo.png">
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Open+Sans:wght@300;400;600;700&display=swap" rel="stylesheet" />
+  <link href="https://unicons.iconscout.com/release/v4.0.0/css/line.css" rel="stylesheet" />
+</head>
+<body>
+  <header>
+    <div class="container">
+      <div class="logo">
+        <img src="/images/logo1.png" alt="FIRE CHECK Logo" />
+      </div>
+      <nav>
+        <ul>
+          <li><a href="/" class="nav-link">หน้าแรก</a></li>
+          <li><a href="/about" class="nav-link">เกี่ยวกับ</a></li>
+          <li><a href="/contact" class="nav-link">ติดต่อ</a></li>
+        </ul>
+        <div class="auth-buttons">
+          <a href="/login" class="button">เข้าสู่ระบบ</a>
+          <a href="/register" class="button primary">ลงทะเบียน</a>
+        </div>
+      </nav>
+    </div>
+  </header>
+  <main>
+    <div class="container">
+      <section class="form-section">
+        <div class="form-container">
+          <i class="uil uil-times form-close"></i>
+          <div class="form signup-form">
+            <form action="/register_process" method="POST" id="registerForm">
+              <h2>ลงทะเบียน</h2>
+              <% if (typeof errorMessage !== 'undefined') { %>
+              <div class="error-message">
+                <%= errorMessage %>
+              </div>
+              <% } %>
+              <div class="input_box">
+                <i class="uil uil-user"></i>
+                <input type="text" placeholder="กรอกชื่อของคุณ" name="FirstName" required />
+                <small class="error-text"></small>
+              </div>
+              <div class="input_box">
+                <i class="uil uil-user"></i>
+                <input type="text" placeholder="กรอกนามสกุลของคุณ" name="LastName" required />
+                <small class="error-text"></small>
+              </div>
+              <div class="input_box">
+                <i class="uil uil-user-circle"></i>
+                <input type="text" placeholder="สร้างชื่อผู้ใช้" name="User_Username" required />
+                <small class="error-text"></small>
+              </div>
+              <div class="input_box">
+                <i class="uil uil-envelope"></i>
+                <input type="email" placeholder="กรอกอีเมลของคุณ" name="Email" required />
+                <small class="error-text"></small>
+              </div>
+              <div class="input_box">
+                <i class="uil uil-lock"></i>
+                <input type="password" placeholder="ตั้งรหัสผ่าน" name="User_Password" id="password" required />
+                <small class="error-text"></small>
+              </div>
+              <div class="input_box">
+                <i class="uil uil-lock"></i>
+                <input type="password" placeholder="ยืนยันรหัสผ่าน" name="confirm_password" id="confirm_password" required />
+                <small class="error-text"></small>
+              </div>
+              <div class="select_box">
+                <select name="Role" id="role">
+                  <option value="">เลือกประเภทผู้ใช้</option>
+                  <option value="user">ผู้ใช้ทั่วไป</option>
+                  <% if (isAdmin) { %>
+                  <option value="admin">เจ้าหน้าที่</option>
+                  <% } %>
+                </select>
+                <small class="error-text"></small>
+              </div>
+              <button type="button" class="button primary" onclick="validateForm()">ลงทะเบียน</button>
+              <div class="login_signup">
+                เป็นสมาชิกอยู่แล้ว?
+                <a href="/login" id="signup">เข้าสู่ระบบ</a>
+              </div>
+            </form>
+          </div>
+        </div>
+      </section>
+    </div>
+  </main>
+  <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+  <script>
+    document.addEventListener("DOMContentLoaded", function () {
+      const formClose = document.querySelector(".form-close");
+
+      if (formClose) {
+        formClose.addEventListener("click", () => {
+          window.location.href = "/";
+        });
+      }
+    });
+
+    function validateForm() {
+      const form = document.getElementById('registerForm');
+      const firstName = form.elements['FirstName'].value.trim();
+      const lastName = form.elements['LastName'].value.trim();
+      const username = form.elements['User_Username'].value.trim();
+      const email = form.elements['Email'].value.trim();
+      const password = form.elements['User_Password'].value.trim();
+      const confirmPassword = form.elements['confirm_password'].value.trim();
+      const role = form.elements['Role'].value;
+
+      let valid = true;
+
+      clearErrors();
+
+      // ตรวจสอบความครบถ้วนของข้อมูล
+      if (firstName === '') {
+        showError('FirstName', 'กรุณากรอกชื่อของคุณ');
+        valid = false;
+      }
+
+      if (lastName === '') {
+        showError('LastName', 'กรุณากรอกนามสกุลของคุณ');
+        valid = false;
+      }
+
+      if (username === '') {
+        showError('User_Username', 'กรุณากรอกชื่อผู้ใช้');
+        valid = false;
+      }
+
+      if (!isValidEmail(email)) {
+        showError('Email', 'กรุณากรอกอีเมลให้ถูกต้อง');
+        valid = false;
+      }
+
+      if (password === '') {
+        showError('User_Password', 'กรุณากรอกรหัสผ่าน');
+        valid = false;
+      }
+
+      if (confirmPassword === '') {
+        showError('confirm_password', 'กรุณายืนยันรหัสผ่าน');
+        valid = false;
+      }
+
+      if (password !== confirmPassword) {
+        showError('confirm_password', 'รหัสผ่านไม่ตรงกัน');
+        valid = false;
+      }
+
+      if (role === '') {
+        showError('Role', 'กรุณาเลือกประเภทผู้ใช้');
+        valid = false;
+      }
+
+      if (valid) {
+        form.action = role === "admin" ? "/register_process_admin" : "/register_process";
+        form.submit();
+      }
+    }
+
+    function showError(fieldName, message) {
+      const field = document.getElementsByName(fieldName)[0];
+      const errorText = field.nextElementSibling;
+      field.classList.add('error');
+      errorText.innerText = message;
+      errorText.style.display = 'block';
+    }
+
+    function clearErrors() {
+      const errorFields = document.querySelectorAll('.error');
+      const errorTexts = document.querySelectorAll('.error-text');
+
+      errorFields.forEach(field => field.classList.remove('error'));
+      errorTexts.forEach(errorText => errorText.style.display = 'none');
+    }
+
+    function isValidEmail(email) {
+      const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+      return emailRegex.test(email);
+    }
+  </script>
+  <style>
+    .error {
+      border: 1px solid red;
+    }
+    .error-text {
+      color: red;
+      display: none;
+    }
+
+    .select_box {
+  position: relative;
+  margin-bottom: 20px;
+}
+
+.select_box select {
+  width: 100%;
+  padding: 10px;
+  font-size: 16px;
+  border: 1px solid var(--form-border);
+  border-radius: 5px;
+  background-color: var(--form-background);
+  color: var(--text-color);
+  appearance: none; /* Remove default arrow in Firefox */
+  -webkit-appearance: none; /* Remove default arrow in Chrome */
+  -moz-appearance: none; /* Remove default arrow in Firefox */
+  background-image: url('data:image/svg+xml;utf8,<svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path d="M7.41 8.59L12 13.17l4.59-4.58L18 10l-6 6-6-6 1.41-1.41z"/></svg>');
+  background-repeat: no-repeat;
+  background-position: right 10px top 50%;
+  background-size: 16px auto;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  margin-top: 20px;
+}
+
+.select_box select:hover {
+  border-color: var(--primary-color);
+}
+
+.select_box select:focus {
+  border-color: var(--primary-color);
+  box-shadow: 0 0 5px rgba(239, 67, 100, 0.5);
+}
+
+.error-text {
+  color: #EF4364;
+  font-size: 12px;
+  margin-top: 5px;
+}
+
+  </style>
+</body>
+</html>

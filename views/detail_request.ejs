@@ -1,0 +1,53 @@
+<!-- detail_request.ejs -->
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>รายละเอียดคำขอ | FIRE CHECK</title>
+    <link rel="stylesheet" href="/css/style.css">
+    <link rel="icon" type="image/png" href="/images/logo.png">
+</head>
+<body>
+    <header>
+        <div class="container">
+            <div class="logo">
+                <img src="/images/logo1.png" alt="FIRE CHECK Logo">
+            </div>
+            <nav>
+                <ul>
+                    <li><a href="/" class="nav-link">หน้าแรก</a></li>
+                    <li><a href="/burning" class="nav-link">ขอคำแนะนำ</a></li>
+                    <li><a href="/history_request" class="nav-link">ประวัติคำขอ</a></li>
+                </ul>
+                <div class="auth-buttons">
+                    <a href="#" class="button primary"><%= user.firstName %> <%= user.lastName %> (<%= user.role %>)</a>
+                    <a href="/logout" class="button logout-button">ออกจากระบบ</a>
+                </div>
+            </nav>
+        </div>
+    </header>
+    <main>
+        <section class="detail-section">
+            <div class="container-1">
+                <div class="back-button-container">
+                    <a href="/history_request" class="button-common">ย้อนกลับ</a>
+                </div>
+                <div class="detail-header">
+                    <h1>รายละเอียดคำขอ</h1>
+                </div>
+                <div class="detail-content">
+                    <p><strong>ลำดับ:</strong> <%= request.id %></p>
+                    <p><strong>วันที่:</strong> <%= moment(request.Burn_Date).format('DD-MM-YYYY') %></p>
+                    <p><strong>เวลา:</strong> <%= request.Burn_Time %></p>
+                    <p><strong>ละติจูด:</strong> <%= request.Latitude %></p>
+                    <p><strong>ลองจิจูด:</strong> <%= request.Longitude %></p>
+                    <p><strong>ระดับสีค่าฝุ่น:</strong> <%= request.level %></p>
+                    <p><strong>คำแนะนำ:</strong> <%= request.advice %></p>
+                    <p><strong>รายละเอียดเพิ่มเติม:</strong> <%= request.details %></p>
+                </div>
+            </div>
+        </section>
+    </main>
+</body>
+</html>

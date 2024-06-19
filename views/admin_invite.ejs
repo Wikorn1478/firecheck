@@ -1,0 +1,65 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Admin Invite | FIRE CHECK</title>
+  <link rel="stylesheet" href="/css/style.css" />
+  <link rel="icon" type="image/png" href="/images/logo.png">
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Open+Sans:wght@300;400;600;700&display=swap" rel="stylesheet" />
+  <link href="https://unicons.iconscout.com/release/v4.0.0/css/line.css" rel="stylesheet" />
+</head>
+<body>
+  <header>
+        <div class="container">
+            <div class="logo">
+                <img src="/images/logo1.png" alt="FIRE CHECK Logo">
+            </div>
+            <nav>
+                <ul>
+                    <li><a href="/admin_dashboard" class="nav-link">หน้าแรก</a></li>
+                    <li><a href="/history_request_admin" class="nav-link">ประวัติคำขอ</a></li> <!-- เพิ่มลิงก์นี้ -->
+                </ul>
+                <div class="auth-buttons">
+                    <a href="#" class="button primary"><%= user.firstName %> <%= user.lastName %> (<%= user.role %>)</a>
+                    <a href="/logout" class="button logout-button">ออกจากระบบ</a>
+                </div>
+            </nav>
+        </div>
+    </header>
+  <main>
+    <div class="container">
+      <section class="form-section">
+        <div class="form-container">
+          <i class="uil uil-times form-close"></i>
+          <div class="form signup-form">
+            <h2>Generate Admin Invite Link</h2>
+            <p>Click the button below to generate a secure invite link for admin registration:</p>
+            <form action="/admin_invite" method="GET">
+              <button type="submit" class="button primary">Generate Invite Link</button>
+            </form>
+            <% if (inviteLink) { %>
+            <div class="invite-link">
+              <p>Invite link: <a href="<%= inviteLink %>"><%= inviteLink %></a></p>
+            </div>
+            <% } %>
+          </div>
+        </div>
+      </section>
+    </div>
+  </main>
+  <script>
+    document.addEventListener("DOMContentLoaded", function () {
+      const formClose = document.querySelector(".form-close");
+
+      if (formClose) {
+        formClose.addEventListener("click", () => {
+          window.location.href = "/";
+        });
+      }
+    });
+  </script>
+</body>
+</html>
