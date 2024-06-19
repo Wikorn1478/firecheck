@@ -1,18 +1,25 @@
+require('dotenv').config();
 const express = require('express');
 const path = require('path');
 const bodyParser = require('body-parser');
 const session = require('express-session');
+const RedisStore = require('connect-redis')(session);
+const redis = require('redis');
 const authRoutes = require('./routes/auth');
-const userRoutes = require('./routes/userRoutes'); 
-require('dotenv').config();
+const userRoutes = require('./routes/userRoutes');
 
 const app = express();
 const port = process.env.PORT || 4000;
+
+const redisClient = redis.createClient({
+    url: process.env.REDIS_URL
+});
 
 // Middleware
 app.use(bodyParser.urlencoded({ extended: true }));
 app.use(bodyParser.json());
 app.use(session({
+    store: new RedisStore({ client: redisClient }),
     secret: 'secret-key',
     resave: false,
     saveUninitialized: true
@@ -32,7 +39,7 @@ app.use((req, res, next) => {
 
 // Routes
 app.use('/', authRoutes);
-app.use('/user', userRoutes); // Add this line
+app.use('/user', userRoutes);
 
 // Add this route handler for admin_details in index.js
 
